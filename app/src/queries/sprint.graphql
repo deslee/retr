@@ -1,0 +1,22 @@
+query Sprint($sprintId: String!, $cursor: Cursor) {
+  sprint(id: $sprintId) {
+    id
+    title
+  }
+  actions(condition: {sprintid: $sprintId}, orderBy: [ID_ASC], after: $cursor) {
+    nodes {
+      id
+      type
+      timestamp
+      payload
+    }
+  }
+}
+
+mutation createSprint($id: String!) {
+  createSprint(input: { sprint: { id:$id } }) {
+    sprint {
+      id
+    }
+  }
+}

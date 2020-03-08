@@ -1,17 +1,17 @@
 import { useQuery, useMutation, useSubscription } from "@apollo/react-hooks"
 
-import { SprintQuery, SprintQueryVariables, SprintDocument, CreateSprintMutation, CreateSprintMutationVariables, CreateSprintDocument, ActionAddedSubscriptionResult, ActionAddedSubscriptionVariables, ActionAddedDocument, CreateActionPayload, CreateActionMutationVariables, CreateActionDocument, Action, ActionAddedSubscription } from "../generated"
+import { SprintQuery, SprintQueryVariables, SprintDocument, CreateSprintMutation, CreateSprintMutationVariables, CreateSprintDocument, ActionAddedSubscriptionVariables, ActionAddedDocument, CreateActionPayload, CreateActionMutationVariables, CreateActionDocument, Action, ActionAddedSubscription } from "../generated"
 
 import { useDispatch, useSelector } from "react-redux"
 
 import { useEffect } from "react"
 
-import { setSprintId, cardAdded } from "../slices/SprintSlice"
+import { setSprintId } from "../slices/SprintSlice"
 
-import { v4 as uuid } from 'uuid'
 import { RootState } from "../slices"
+import { PayloadAction } from "@reduxjs/toolkit"
+import clientId from "../clientId"
 
-const clientId = uuid()
 
 function useInitSprint(sprintId: string) {
     const { loading: sprintQueryLoading, data } = useQuery<SprintQuery, SprintQueryVariables>(SprintDocument, {
@@ -58,7 +58,7 @@ function useInitSprint(sprintId: string) {
 
 function useSyncSprint(sprintId: string) {
     const dispatch = useDispatch()
-    const {loading, data } = useSubscription<ActionAddedSubscription, ActionAddedSubscriptionVariables>(ActionAddedDocument, {
+    const { data } = useSubscription<ActionAddedSubscription, ActionAddedSubscriptionVariables>(ActionAddedDocument, {
         variables: { topic: `${sprintId}:actions` }
     })
     useEffect(() => {
@@ -73,20 +73,19 @@ function useSyncSprint(sprintId: string) {
     }, [data, dispatch])
 }
 
-export function useAddCard() {
+export function useSyncDispatch() {
     const sprintid = useSelector((state: RootState) => state.sprint.sprintid)
     const [mutate] = useMutation<CreateActionPayload, CreateActionMutationVariables>(CreateActionDocument)
     const dispatch = useDispatch();
-    return async function addCard(card: string) {
-        const payload = cardAdded(card)
-        dispatch(payload)
+    return async function syncDispatch(action: PayloadAction<unknown>) {
+        dispatch(action)
         await mutate({
             variables: {
-                type: cardAdded.type.toString(),
+                type: action.type.toString(),
                 timestamp: new Date(),
                 userId: clientId,
                 sprintId: sprintid!,
-                payload
+                payload: action
             }
         })
     }

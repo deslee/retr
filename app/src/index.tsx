@@ -10,6 +10,8 @@ import { Provider } from 'react-redux'
 import { rootReducer, RootState } from './slices';
 import syncMiddleware from './sync';
 import client from './apollo';
+import { DndProvider } from 'react-dnd'
+import Backend from 'react-dnd-html5-backend'
 
 const store = configureStore({
     reducer: rootReducer,
@@ -19,8 +21,10 @@ const store = configureStore({
 ReactDOM.render(
     <ApolloProvider client={client}>
         <Provider store={store}>
-            <CssBaseline />
-            <App />
+            <DndProvider backend={Backend}>
+                <CssBaseline />
+                <App />
+            </DndProvider>
         </Provider>
     </ApolloProvider>,
     document.getElementById('root')

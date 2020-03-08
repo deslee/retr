@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
-import * as React from 'react';
 import * as ApolloReactCommon from '@apollo/react-common';
+import * as React from 'react';
 import * as ApolloReactComponents from '@apollo/react-components';
 import * as ApolloReactHoc from '@apollo/react-hoc';
 export type Maybe<T> = T | null;
@@ -23,6 +23,7 @@ export type Action = Node & {
   id: Scalars['Int'],
   type: Scalars['String'],
   sprintid?: Maybe<Scalars['String']>,
+  userid: Scalars['String'],
   timestamp: Scalars['Datetime'],
   payload?: Maybe<Scalars['JSON']>,
   sprintBySprintid?: Maybe<Sprint>,
@@ -38,6 +39,7 @@ export type ActionInput = {
   id?: Maybe<Scalars['Int']>,
   type: Scalars['String'],
   sprintid?: Maybe<Scalars['String']>,
+  userid: Scalars['String'],
   timestamp: Scalars['Datetime'],
   payload?: Maybe<Scalars['JSON']>,
 };
@@ -46,6 +48,7 @@ export type ActionPatch = {
   id?: Maybe<Scalars['Int']>,
   type?: Maybe<Scalars['String']>,
   sprintid?: Maybe<Scalars['String']>,
+  userid?: Maybe<Scalars['String']>,
   timestamp?: Maybe<Scalars['Datetime']>,
   payload?: Maybe<Scalars['JSON']>,
 };
@@ -164,6 +167,13 @@ export type DeleteSprintPayloadSprintEdgeArgs = {
   orderBy?: Maybe<Array<SprintsOrderBy>>
 };
 
+
+export type ListenPayload = {
+   __typename?: 'ListenPayload',
+  query?: Maybe<Query>,
+  relatedNode?: Maybe<Node>,
+  relatedNodeId?: Maybe<Scalars['ID']>,
+};
 
 export type Mutation = {
    __typename?: 'Mutation',
@@ -356,6 +366,16 @@ export enum SprintsOrderBy {
   PrimaryKeyDesc = 'PRIMARY_KEY_DESC'
 }
 
+export type Subscription = {
+   __typename?: 'Subscription',
+  listen: ListenPayload,
+};
+
+
+export type SubscriptionListenArgs = {
+  topic: Scalars['String']
+};
+
 export type UpdateActionByNodeIdInput = {
   clientMutationId?: Maybe<Scalars['String']>,
   nodeId: Scalars['ID'],
@@ -407,6 +427,39 @@ export type UpdateSprintPayloadSprintEdgeArgs = {
   orderBy?: Maybe<Array<SprintsOrderBy>>
 };
 
+export type CreateActionMutationVariables = {
+  type: Scalars['String'],
+  sprintId: Scalars['String'],
+  userId: Scalars['String'],
+  timestamp: Scalars['Datetime'],
+  payload: Scalars['JSON']
+};
+
+
+export type CreateActionMutation = (
+  { __typename?: 'Mutation' }
+  & { createAction: Maybe<(
+    { __typename?: 'CreateActionPayload' }
+    & Pick<CreateActionPayload, 'clientMutationId'>
+  )> }
+);
+
+export type ActionAddedSubscriptionVariables = {
+  topic: Scalars['String']
+};
+
+
+export type ActionAddedSubscription = (
+  { __typename?: 'Subscription' }
+  & { listen: (
+    { __typename?: 'ListenPayload' }
+    & { relatedNode: Maybe<{ __typename?: 'Query' } | (
+      { __typename?: 'Action' }
+      & Pick<Action, 'id' | 'type' | 'userid' | 'timestamp' | 'payload'>
+    ) | { __typename?: 'Sprint' }> }
+  ) }
+);
+
 export type SprintQueryVariables = {
   sprintId: Scalars['String'],
   cursor?: Maybe<Scalars['Cursor']>
@@ -444,6 +497,66 @@ export type CreateSprintMutation = (
 );
 
 
+export const CreateActionDocument = gql`
+    mutation CreateAction($type: String!, $sprintId: String!, $userId: String!, $timestamp: Datetime!, $payload: JSON!) {
+  createAction(input: {action: {type: $type, sprintid: $sprintId, userid: $userId, timestamp: $timestamp, payload: $payload}}) {
+    clientMutationId
+  }
+}
+    `;
+export type CreateActionMutationFn = ApolloReactCommon.MutationFunction<CreateActionMutation, CreateActionMutationVariables>;
+export type CreateActionComponentProps = Omit<ApolloReactComponents.MutationComponentOptions<CreateActionMutation, CreateActionMutationVariables>, 'mutation'>;
+
+    export const CreateActionComponent = (props: CreateActionComponentProps) => (
+      <ApolloReactComponents.Mutation<CreateActionMutation, CreateActionMutationVariables> mutation={CreateActionDocument} {...props} />
+    );
+    
+export type CreateActionProps<TChildProps = {}> = ApolloReactHoc.MutateProps<CreateActionMutation, CreateActionMutationVariables> & TChildProps;
+export function withCreateAction<TProps, TChildProps = {}>(operationOptions?: ApolloReactHoc.OperationOption<
+  TProps,
+  CreateActionMutation,
+  CreateActionMutationVariables,
+  CreateActionProps<TChildProps>>) {
+    return ApolloReactHoc.withMutation<TProps, CreateActionMutation, CreateActionMutationVariables, CreateActionProps<TChildProps>>(CreateActionDocument, {
+      alias: 'createAction',
+      ...operationOptions
+    });
+};
+export type CreateActionMutationResult = ApolloReactCommon.MutationResult<CreateActionMutation>;
+export type CreateActionMutationOptions = ApolloReactCommon.BaseMutationOptions<CreateActionMutation, CreateActionMutationVariables>;
+export const ActionAddedDocument = gql`
+    subscription ActionAdded($topic: String!) {
+  listen(topic: $topic) {
+    relatedNode {
+      ... on Action {
+        id
+        type
+        userid
+        timestamp
+        payload
+      }
+    }
+  }
+}
+    `;
+export type ActionAddedComponentProps = Omit<ApolloReactComponents.SubscriptionComponentOptions<ActionAddedSubscription, ActionAddedSubscriptionVariables>, 'subscription'>;
+
+    export const ActionAddedComponent = (props: ActionAddedComponentProps) => (
+      <ApolloReactComponents.Subscription<ActionAddedSubscription, ActionAddedSubscriptionVariables> subscription={ActionAddedDocument} {...props} />
+    );
+    
+export type ActionAddedProps<TChildProps = {}> = ApolloReactHoc.DataProps<ActionAddedSubscription, ActionAddedSubscriptionVariables> & TChildProps;
+export function withActionAdded<TProps, TChildProps = {}>(operationOptions?: ApolloReactHoc.OperationOption<
+  TProps,
+  ActionAddedSubscription,
+  ActionAddedSubscriptionVariables,
+  ActionAddedProps<TChildProps>>) {
+    return ApolloReactHoc.withSubscription<TProps, ActionAddedSubscription, ActionAddedSubscriptionVariables, ActionAddedProps<TChildProps>>(ActionAddedDocument, {
+      alias: 'actionAdded',
+      ...operationOptions
+    });
+};
+export type ActionAddedSubscriptionResult = ApolloReactCommon.SubscriptionResult<ActionAddedSubscription>;
 export const SprintDocument = gql`
     query Sprint($sprintId: String!, $cursor: Cursor) {
   sprint(id: $sprintId) {

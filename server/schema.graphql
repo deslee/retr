@@ -6,6 +6,7 @@ type Action implements Node {
   id: Int!
   type: String!
   sprintid: String
+  userid: String!
   timestamp: Datetime!
   payload: JSON
 
@@ -32,6 +33,7 @@ input ActionInput {
   id: Int
   type: String!
   sprintid: String
+  userid: String!
   timestamp: Datetime!
   payload: JSON
 }
@@ -43,6 +45,7 @@ input ActionPatch {
   id: Int
   type: String
   sprintid: String
+  userid: String
   timestamp: Datetime
   payload: JSON
 }
@@ -271,6 +274,15 @@ type DeleteSprintPayload {
 The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
 """
 scalar JSON
+
+type ListenPayload {
+  """
+  Our root query field type. Allows us to run any query from our subscription payload.
+  """
+  query: Query
+  relatedNode: Node
+  relatedNodeId: ID
+}
 
 """
 The root mutation type which contains root level fields which mutate data.
@@ -565,6 +577,13 @@ enum SprintsOrderBy {
   ID_DESC
   PRIMARY_KEY_ASC
   PRIMARY_KEY_DESC
+}
+
+"""
+The root subscription type: contains realtime events you can subscribe to with the `subscription` operation.
+"""
+type Subscription {
+  listen(topic: String!): ListenPayload!
 }
 
 """All input for the `updateActionByNodeId` mutation."""

@@ -1,0 +1,29 @@
+mutation CreateAction($type: String!, $sprintId: String!, $userId: String!, $timestamp: Datetime!, $payload: JSON!) {
+  createAction(
+    input: {
+      action: {
+        type: $type
+        sprintid: $sprintId
+        userid: $userId
+        timestamp: $timestamp
+        payload: $payload
+      }
+    }
+  ) {
+    clientMutationId
+  }
+}
+
+subscription ActionAdded($topic: String!) {
+	listen(topic: $topic) {
+    relatedNode {
+      ...on Action {
+        id
+        type
+        userid
+        timestamp
+        payload
+      }
+    }
+  }
+}

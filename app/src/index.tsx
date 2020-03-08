@@ -3,19 +3,17 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
-import ApolloClient from 'apollo-boost';
 import { ApolloProvider } from '@apollo/react-hooks';
 import CssBaseline from '@material-ui/core/CssBaseline'
-import { configureStore } from '@reduxjs/toolkit'
+import { configureStore, getDefaultMiddleware } from '@reduxjs/toolkit'
 import { Provider } from 'react-redux'
-import rootReducer from './rootReducer';
-
-const client = new ApolloClient({
-  uri: 'http://localhost:5000/graphql',
-});
+import { rootReducer, RootState } from './slices';
+import syncMiddleware from './sync';
+import client from './apollo';
 
 const store = configureStore({
-    reducer: rootReducer
+    reducer: rootReducer,
+    middleware: [...getDefaultMiddleware<RootState>(), syncMiddleware] as const
 })
 
 ReactDOM.render(

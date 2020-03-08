@@ -12,20 +12,31 @@ import syncMiddleware from './sync';
 import client from './apollo';
 import { DndProvider } from 'react-dnd'
 import Backend from 'react-dnd-html5-backend'
+import { ThemeProvider, createMuiTheme } from '@material-ui/core';
 
 const store = configureStore({
     reducer: rootReducer,
     middleware: [...getDefaultMiddleware<RootState>(), syncMiddleware] as const
 })
 
+const theme = createMuiTheme({
+    palette: {
+        primary: {
+            main: '#1976d2'
+        },
+    }
+})
+
 ReactDOM.render(
     <ApolloProvider client={client}>
-        <Provider store={store}>
-            <DndProvider backend={Backend}>
-                <CssBaseline />
-                <App />
-            </DndProvider>
-        </Provider>
+        <ThemeProvider theme={theme}>
+            <Provider store={store}>
+                <DndProvider backend={Backend}>
+                    <CssBaseline />
+                    <App />
+                </DndProvider>
+            </Provider>
+        </ThemeProvider>
     </ApolloProvider>,
     document.getElementById('root')
 );

@@ -53,7 +53,7 @@ function useInitSprint(sprintId: string) {
         }
     }, [sprintQueryLoading, data, sprintId, addSprint, dispatch])
 
-    return createSprintLoading || sprintQueryLoading
+    return [createSprintLoading || sprintQueryLoading, data?.sprint] as const
 }
 
 function useSyncSprint(sprintId: string) {

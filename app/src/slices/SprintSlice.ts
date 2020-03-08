@@ -10,6 +10,7 @@ export type Card = {
     id: string
     text: string
     userId: string
+    order: number
     comments: Comment[]
     votes: number
 }
@@ -17,6 +18,7 @@ export type Card = {
 export type Column = {
     id: string
     title: string
+    order: number
     cards: Card[]
 }
 
@@ -41,7 +43,8 @@ const sprintSlice = createSlice({
             state.columns.push({
                 id,
                 title,
-                cards: []
+                cards: [],
+                order: state.columns.length
             })
         },
         addCard(state, { payload: { column: columnId, id, text, userId } }: PayloadAction<{ column: string, id: string, text: string, userId: string }>) {
@@ -54,7 +57,8 @@ const sprintSlice = createSlice({
                 text: text,
                 comments: [],
                 votes: 0,
-                userId
+                userId,
+                order: column.cards.length
             })
         },
         editColumn(state, { payload: { columnId, title } }: PayloadAction<{ columnId: string, title: string }>) {
@@ -63,6 +67,11 @@ const sprintSlice = createSlice({
                 throw new Error(`Cannot find column ${columnId}`)
             }
             column.title = title
+        },
+        reorderColumn(state, { payload: { fromIndex, index } }: PayloadAction<{ fromIndex: number, index: number }>) {
+            console.log(fromIndex, index)
+            const column = state.columns.splice(fromIndex, 1)
+            state.columns.splice(index, 0, ...column)
         },
         deleteColumn(state, { payload: columnId }: PayloadAction<string>) {
             state.columns = state.columns.filter(column => column.id !== columnId)
@@ -99,6 +108,6 @@ const sprintSlice = createSlice({
     }
 })
 
-export const { setSprintId, addColumn, addCard, deleteCard, moveCard, editColumn, editCard, deleteColumn } = sprintSlice.actions
+export const { setSprintId, addColumn, addCard, deleteCard, moveCard, editColumn, editCard, deleteColumn, reorderColumn } = sprintSlice.actions
 
 export default sprintSlice.reducer

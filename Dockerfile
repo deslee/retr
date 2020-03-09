@@ -8,4 +8,5 @@ RUN npm run build
 
 FROM nginx
 COPY --from=builder /app/build /var/www
+EXPOSE 80
 ADD nginx.conf /etc/nginx/nginx.conf

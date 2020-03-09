@@ -12,7 +12,7 @@ const httpLink = new HttpLink({
 
 // Create a WebSocket link:
 const wsLink = new WebSocketLink({
-    uri: `${window.location.protocol === 'https' ? 'wss' : 'ws'}://${window.location.host}/graphql`,
+    uri: `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}/graphql`,
     options: {
         reconnect: true,
         timeout: 50000

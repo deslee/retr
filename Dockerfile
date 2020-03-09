@@ -1,11 +1,11 @@
 FROM node:13 AS builder
 WORKDIR /app
-ADD package.json .
-ADD package-lock.json .
+ADD app/package.json .
+ADD app/package-lock.json .
 RUN npm ci
-COPY . /app
+ADD app .
 RUN npm run build
 
 FROM nginx
 COPY --from=builder /app/build /var/www
-ADD ../nginx.conf /etc/nginx/nginx.conf
+ADD nginx.conf /etc/nginx/nginx.conf

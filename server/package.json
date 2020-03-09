@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "postgraphile --plugins @graphile/pg-pubsub -c postgres://postgres:postgres@postgres:5432/postgres --schema public --dynamic-json --subscriptions --simple-subscriptions --no-setof-functions-contain-nulls --no-ignore-rbac --no-ignore-indexes --show-error-stack=json --extended-errors hint,detail,errcode --append-plugins @graphile-contrib/pg-simplify-inflector --export-schema-graphql schema.graphql --graphiql \"/\" --enhance-graphiql --allow-explain --enable-query-batching --legacy-relations omit --cors --host 0.0.0.0 --port 5001"
+    "start": "postgraphile --plugins @graphile/pg-pubsub -c postgres://postgres:postgres@postgres:5432/postgres --schema public --dynamic-json --subscriptions --simple-subscriptions --no-setof-functions-contain-nulls --no-ignore-rbac --no-ignore-indexes --show-error-stack=json --extended-errors hint,detail,errcode --append-plugins @graphile-contrib/pg-simplify-inflector --export-schema-graphql schema.graphql --graphiql \"/\" --enhance-graphiql --allow-explain --enable-query-batching --legacy-relations omit --cors --host 0.0.0.0 --port 5000"
   },
   "keywords": [],
   "author": "",

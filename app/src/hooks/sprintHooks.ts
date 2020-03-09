@@ -1,20 +1,27 @@
 import { useQuery, useMutation, useSubscription } from "@apollo/react-hooks"
-
+import { useSnackbar } from 'notistack'
 import { SprintQuery, SprintQueryVariables, SprintDocument, CreateSprintMutation, CreateSprintMutationVariables, CreateSprintDocument, ActionAddedSubscriptionVariables, ActionAddedDocument, CreateActionPayload, CreateActionMutationVariables, CreateActionDocument, Action, ActionAddedSubscription } from "../generated"
-
 import { useDispatch, useSelector } from "react-redux"
-
-import { useEffect } from "react"
-
-import { setSprintId } from "../slices/SprintSlice"
-
-import { RootState } from "../slices"
+import { useEffect, useState, useCallback } from "react"
 import { PayloadAction } from "@reduxjs/toolkit"
 import clientId from "../clientId"
+import { useParams } from "react-router-dom"
+import { Column, setSprintTitle, addColumn, initialized } from "../slices/SprintSlice"
+import { v4 as uuid } from 'uuid'
+import { RootState } from "../slices"
 
+export function useSprintId() {
+    const { sprintId } = useParams();
+    if (!sprintId) {
+        throw new Error("Sprint id missing from route params!")
+    }
 
-function useInitSprint(sprintId: string) {
-    const { loading: sprintQueryLoading, data } = useQuery<SprintQuery, SprintQueryVariables>(SprintDocument, {
+    return sprintId;
+}
+
+function useInitSprint() {
+    const sprintId = useSprintId()
+    const { loading: sprintQueryLoading, data, error } = useQuery<SprintQuery, SprintQueryVariables>(SprintDocument, {
         variables: {
             sprintId: sprintId
         }
@@ -22,9 +29,18 @@ function useInitSprint(sprintId: string) {
 
     const [addSprint, { loading: createSprintLoading }] = useMutation<CreateSprintMutation, CreateSprintMutationVariables>(CreateSprintDocument)
     const dispatch = useDispatch()
+    const initialTitle = useSelector((state: RootState) => state.sprint.initialTitle)
+    const sprintInitialized = useSelector((state: RootState) => state.sprint.initialized)
+    const syncDispatch = useSyncDispatch()
+    useSprintLockNotification(sprintInitialized)
+
+    if (error) {
+        throw error
+    }
 
     useEffect(() => {
         async function init({ sprint, actions }: SprintQuery) {
+            console.log('checking if sprint exists')
             if (!sprint) {
                 console.log('creating sprint')
                 await addSprint({
@@ -33,30 +49,51 @@ function useInitSprint(sprintId: string) {
                     },
                     refetchQueries: [{
                         query: SprintDocument,
-                        variables: { sprintId: sprintId! }
+                        variables: { sprintId: sprintId }
                     }]
                 })
+                if (initialTitle) {
+                    syncDispatch(setSprintTitle(initialTitle))
+                }
+                syncDispatch(addColumn({
+                    id: uuid(),
+                    title: 'Went well'
+                }))
+                syncDispatch(addColumn({
+                    id: uuid(),
+                    title: `Could've gone better`
+                }))
+                syncDispatch(addColumn({
+                    id: uuid(),
+                    title: `Action items`
+                }))
+                syncDispatch(addColumn({
+                    id: uuid(),
+                    title: `Shout outs`
+                }))
+            } else if (actions) {
+                console.log('hydrating state', actions.nodes)
+                await Promise.all(
+                    actions.nodes
+                        .map(action => action.payload)
+                        .filter(i => i)
+                        .map(payload => dispatch(payload))
+                )
+                console.log('hydrated state')
             }
-            if (actions) {
-                actions.nodes
-                    .map(action => action.payload)
-                    .filter(i => i)
-                    .forEach(payload => dispatch(payload))
-            }
-            dispatch(setSprintId(sprintId!))
             console.log('sprint initialized')
+            dispatch(initialized())
         }
-        if (!sprintQueryLoading && data) {
+        if (!sprintQueryLoading && data && !sprintInitialized) {
             init(data)
-        } else {
-            console.log('checking if sprint exists')
         }
-    }, [sprintQueryLoading, data, sprintId, addSprint, dispatch])
+    }, [sprintQueryLoading, data, sprintId, addSprint, dispatch, initialTitle, sprintInitialized, syncDispatch])
 
     return [createSprintLoading || sprintQueryLoading, data?.sprint] as const
 }
 
-function useSyncSprint(sprintId: string) {
+function useSyncSprint() {
+    const sprintId = useSprintId()
     const dispatch = useDispatch()
     const { data } = useSubscription<ActionAddedSubscription, ActionAddedSubscriptionVariables>(ActionAddedDocument, {
         variables: { topic: `${sprintId}:actions` }
@@ -74,10 +111,10 @@ function useSyncSprint(sprintId: string) {
 }
 
 export function useSyncDispatch() {
-    const sprintid = useSelector((state: RootState) => state.sprint.sprintid)
+    const sprintid = useSprintId();
     const [mutate] = useMutation<CreateActionPayload, CreateActionMutationVariables>(CreateActionDocument)
     const dispatch = useDispatch();
-    return async function syncDispatch(action: PayloadAction<unknown>) {
+    return useCallback(async function syncDispatch(action: PayloadAction<unknown>) {
         dispatch(action)
         await mutate({
             variables: {
@@ -88,11 +125,44 @@ export function useSyncDispatch() {
                 payload: action
             }
         })
+    }, [dispatch, mutate, sprintid]);
+}
+
+export function useSprint() {
+    useSyncSprint()
+    return useInitSprint()
+}
+
+export function useColumnNavigation(columns: Column[]) {
+    const [visibleColumnIdx, setVisibleColumnIdx] = useState(0)
+    const visibleColumn = columns[visibleColumnIdx]
+    useEffect(() => {
+        if (!visibleColumn) {
+            setVisibleColumnIdx(0)
+        }
+    }, [visibleColumnIdx, visibleColumn])
+    const onPrevColumn = useCallback(() => {
+        setVisibleColumnIdx(visibleColumnIdx - 1)
+    }, [visibleColumnIdx])
+    const onNextColumn = useCallback(() => {
+        setVisibleColumnIdx(visibleColumnIdx + 1)
+    }, [visibleColumnIdx])
+    return {
+        onPrevColumn, onNextColumn,
+        hasPrevColumn: visibleColumnIdx !== 0, hasNextColumn: visibleColumnIdx !== columns.length - 1,
+        visibleColumn, visibleColumnIdx
     }
 }
 
+export function useSprintLockNotification(sprintInitialized: boolean) {
+    const sprintLocked = useSelector((state: RootState) => state.sprint.locked)
+    const [previousLocked, setPreviousLocked] = useState(sprintLocked)
+    const { enqueueSnackbar } = useSnackbar()
 
-export function useSprint(sprintId: string) {
-    useSyncSprint(sprintId)
-    return useInitSprint(sprintId)
+    useEffect(() => {
+        setPreviousLocked(sprintLocked)
+        if (previousLocked !== sprintLocked && sprintInitialized) {
+            enqueueSnackbar(`Sprint ${sprintLocked ? 'locked' : 'unlocked'}`, { variant: 'info' })
+        }
+    }, [sprintLocked, previousLocked, setPreviousLocked, sprintInitialized, enqueueSnackbar])
 }

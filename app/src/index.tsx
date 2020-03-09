@@ -6,11 +6,12 @@ import * as serviceWorker from './serviceWorker';
 import { ApolloProvider } from '@apollo/react-hooks';
 import CssBaseline from '@material-ui/core/CssBaseline'
 import { configureStore, getDefaultMiddleware } from '@reduxjs/toolkit'
-import { Provider } from 'react-redux'
+import { Provider as ReduxProvider } from 'react-redux'
 import { rootReducer, RootState } from './slices';
 import syncMiddleware from './sync';
 import client from './apollo';
 import { DndProvider } from 'react-dnd'
+import { SnackbarProvider } from 'notistack'
 import Backend from 'react-dnd-html5-backend'
 import { ThemeProvider, createMuiTheme } from '@material-ui/core';
 
@@ -30,12 +31,14 @@ const theme = createMuiTheme({
 ReactDOM.render(
     <ApolloProvider client={client}>
         <ThemeProvider theme={theme}>
-            <Provider store={store}>
-                <DndProvider backend={Backend}>
-                    <CssBaseline />
-                    <App />
-                </DndProvider>
-            </Provider>
+            <SnackbarProvider maxSnack={3}>
+                <ReduxProvider store={store}>
+                    <DndProvider backend={Backend}>
+                        <CssBaseline />
+                        <App />
+                    </DndProvider>
+                </ReduxProvider>
+            </SnackbarProvider>
         </ThemeProvider>
     </ApolloProvider>,
     document.getElementById('root')

@@ -3,7 +3,7 @@ WORKDIR /app
 ADD package.json .
 ADD package-lock.json .
 RUN npm ci
-ADD * /app/
+COPY . /app
 RUN npm run build
 
 FROM nginx

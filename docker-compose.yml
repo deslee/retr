@@ -12,5 +12,5 @@ services:
       - postgres
   app:
     build:
-      content: ./app
+      context: ./app
       dockerfile: Dockerfile

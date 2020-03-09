@@ -14,3 +14,6 @@ services:
     build:
       context: ./app
       dockerfile: Dockerfile
+    environment:
+      - VIRTUAL_HOST=retr.dev
+      - LETSENCRYPT_HOST=retr.dev

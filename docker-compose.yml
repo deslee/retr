@@ -17,3 +17,5 @@ services:
     environment:
       - VIRTUAL_HOST=retr.dev
       - LETSENCRYPT_HOST=retr.dev
+    depends_on:
+      - postgres

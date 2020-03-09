@@ -1,6 +1,10 @@
 version: '3'
 services:
-  database:
+  postgres:
     image: postgres
     environment:
-      - POSTGRES_PASSWORD=password
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+        - ./server/schema.sql:/docker-entrypoint.initdb.d/1-schema.sql
+  server:
+    build: ./server/

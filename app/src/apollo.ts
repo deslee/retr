@@ -7,12 +7,12 @@ import ApolloClient from 'apollo-client';
 
 // Create an http link:
 const httpLink = new HttpLink({
-    uri: 'http://localhost:5000/graphql'
+    uri: `${window.location.protocol}//${window.location.host}/graphql`
 });
 
 // Create a WebSocket link:
 const wsLink = new WebSocketLink({
-    uri: `ws://localhost:5000/graphql`,
+    uri: `ws://${window.location.host}/graphql`,
     options: {
         reconnect: true,
         timeout: 50000

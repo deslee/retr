@@ -28,6 +28,7 @@
     "apollo-link-state": "^0.4.2",
     "apollo-link-ws": "^1.0.19",
     "clsx": "^1.1.0",
+    "copy-to-clipboard": "^3.3.1",
     "graphql": "^14.6.0",
     "graphql-tag": "^2.10.3",
     "notistack": "^0.9.9",
@@ -70,5 +71,6 @@
     "@graphql-codegen/typescript": "^1.12.2",
     "@graphql-codegen/typescript-operations": "^1.12.2",
     "@graphql-codegen/typescript-react-apollo": "^1.12.2"
-  }
+  },
+  "proxy": "http://localhost:5000"
 }

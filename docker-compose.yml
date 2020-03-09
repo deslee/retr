@@ -14,6 +14,8 @@ services:
     build:
       context: ./
       dockerfile: Dockerfile
+    ports:
+      - "80"
     environment:
       - VIRTUAL_HOST=retr.dev
       - LETSENCRYPT_HOST=retr.dev

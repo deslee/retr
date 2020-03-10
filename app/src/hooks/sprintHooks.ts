@@ -6,7 +6,7 @@ import { useEffect, useState, useCallback } from "react"
 import { PayloadAction } from "@reduxjs/toolkit"
 import clientId from "../clientId"
 import { useParams } from "react-router-dom"
-import { Column, setSprintTitle, addColumn, initialized } from "../slices/SprintSlice"
+import { Column, setSprintTitle, addColumn, initialized, initializing } from "../slices/SprintSlice"
 import { v4 as uuid } from 'uuid'
 import { RootState } from "../slices"
 
@@ -30,9 +30,9 @@ function useInitSprint() {
     const [addSprint, { loading: createSprintLoading }] = useMutation<CreateSprintMutation, CreateSprintMutationVariables>(CreateSprintDocument)
     const dispatch = useDispatch()
     const initialTitle = useSelector((state: RootState) => state.sprint.initialTitle)
-    const sprintInitialized = useSelector((state: RootState) => state.sprint.initialized)
+    const initialization = useSelector((state: RootState) => state.sprint.initialization)
     const syncDispatch = useSyncDispatch()
-    useSprintLockNotification(sprintInitialized)
+    useSprintLockNotification(initialization)
 
     if (error) {
         throw error
@@ -84,10 +84,11 @@ function useInitSprint() {
             console.log('sprint initialized')
             dispatch(initialized())
         }
-        if (!sprintQueryLoading && data && !sprintInitialized) {
+        if (!sprintQueryLoading && data && initialization === 'NOT_INITIALIZED') {
+            dispatch(initializing())
             init(data)
         }
-    }, [sprintQueryLoading, data, sprintId, addSprint, dispatch, initialTitle, sprintInitialized, syncDispatch])
+    }, [sprintQueryLoading, data, sprintId, addSprint, dispatch, initialTitle, initialization, syncDispatch])
 
     return [createSprintLoading || sprintQueryLoading, data?.sprint] as const
 }
@@ -154,15 +155,15 @@ export function useColumnNavigation(columns: Column[]) {
     }
 }
 
-export function useSprintLockNotification(sprintInitialized: boolean) {
+export function useSprintLockNotification(initialization: RootState['sprint']['initialization']) {
     const sprintLocked = useSelector((state: RootState) => state.sprint.locked)
     const [previousLocked, setPreviousLocked] = useState(sprintLocked)
     const { enqueueSnackbar } = useSnackbar()
 
     useEffect(() => {
         setPreviousLocked(sprintLocked)
-        if (previousLocked !== sprintLocked && sprintInitialized) {
+        if (previousLocked !== sprintLocked && initialization === 'INITIALIZED') {
             enqueueSnackbar(`Sprint ${sprintLocked ? 'locked' : 'unlocked'}`, { variant: 'info' })
         }
-    }, [sprintLocked, previousLocked, setPreviousLocked, sprintInitialized, enqueueSnackbar])
+    }, [sprintLocked, previousLocked, setPreviousLocked, initialization, enqueueSnackbar])
 }

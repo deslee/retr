@@ -29,14 +29,14 @@ type SprintState = {
     columns: Column[],
     locked: boolean,
     initialTitle?: string
-    initialized: boolean
+    initialization: 'NOT_INITIALIZED' | 'INITIALIZING' | 'INITIALIZED'
 }
 
 const initialState: SprintState = {
     title: 'New Sprint',
     columns: [],
     locked: false,
-    initialized: false
+    initialization: 'NOT_INITIALIZED'
 }
 
 const name = 'sprint'
@@ -50,8 +50,11 @@ const sprintSlice = createSlice({
         setInitialTitle(state, action: PayloadAction<string>) {
             state.initialTitle = action.payload
         },
+        initializing(state) {
+            state.initialization = 'INITIALIZING'
+        },
         initialized(state) {
-            state.initialized = true
+            state.initialization = 'INITIALIZED'
         },
         toggleLock(state) {
             state.locked = !state.locked
@@ -171,6 +174,6 @@ const sprintSlice = createSlice({
     }
 })
 
-export const { setSprintTitle, addColumn, addCard, deleteCard, moveCard, editColumn, editCard, deleteColumn, reorderColumn, voteCard, commentCard, nestCard, toggleLock, setInitialTitle, initialized } = sprintSlice.actions
+export const { setSprintTitle, addColumn, addCard, deleteCard, moveCard, editColumn, editCard, deleteColumn, reorderColumn, voteCard, commentCard, nestCard, toggleLock, setInitialTitle, initialized, initializing } = sprintSlice.actions
 
 export default sprintSlice.reducer

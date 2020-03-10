@@ -2,8 +2,8 @@ import React, { useCallback, useRef } from 'react'
 import { Box, Typography, TextField, Button } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
 import { setInitialTitle } from '../slices/SprintSlice';
-import slugify from 'slugify'
 import { useHistory } from 'react-router-dom';
+import { v4 as uuid } from 'uuid'
 
 const LandingPage: React.FC = () => {
     const dispatch = useDispatch()
@@ -13,9 +13,8 @@ const LandingPage: React.FC = () => {
         e.preventDefault()
         if (input.current) {
             const title = input.current.value
-            console.log(title)
             dispatch(setInitialTitle(title))
-            const sprintId = slugify(title, { strict: true })
+            const sprintId = uuid().replace(/-/g, '')
             history.push(`/sprints/${sprintId}`)
         }
         return false
